@@ -18,3 +18,7 @@ logs/
 
 # Testing
 coverage/
+
+# IDE files
+.vscode/
+.idea/

@@ -4,10 +4,10 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// Import modular router
+// Import modular routers
 const orderRoutes = require('./routes/orderRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
 // const testRoutes = require('./routes/testRoutes');
-// const invoiceRoutes = require('./routes/invoiceRoutes');
 
 const app = express();
 app.use(cors());
@@ -16,8 +16,8 @@ app.use(express.json());
 // Mount the router to a specific base path
 // Any route defined in orderRoutes.js will automatically be prefixed with '/api/orders'
 app.use('/api/orders', orderRoutes);
+app.use('/api/invoices', invoiceRoutes);
 // app.use('/api/tests', testRoutes);
-// app.use('/api/invoices', invoiceRoutes);
 
 // --- Core API Routes ---
 
