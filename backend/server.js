@@ -9,6 +9,7 @@ require('dotenv').config();
 const orderRoutes = require('./routes/orderRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/orders', orderRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // --- Core API Routes ---
 
