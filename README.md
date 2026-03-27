@@ -1,14 +1,15 @@
-# 🩺 DiagnosticsPay
+# DiagnosticsPay
 
 **A unified diagnostic billing and payment orchestration layer for African hospitals.**
 Built for the **Enyata x Interswitch Buildathon 2026**.
 
-🌐 **Live Demo:** [https://dxpay.vercel.app](https://dxpay.vercel.app/)
-⚙️ **Live API Base URL:** [https://dxpay.onrender.com](https://dxpay.onrender.com/)
+**Live Demo:** [https://dxpay.vercel.app](https://dxpay.vercel.app/)
+
+**Live API Base URL:** [https://dxpay.onrender.com](https://dxpay.onrender.com/)
 
 ---
 
-## 💡 The Problem
+## The Problem
 
 In many African healthcare facilities, diagnostic services suffer from fragmented payment systems. Patients often move between departments (Labs, Radiology, Pharmacy), paying separately for tests and receiving multiple paper receipts. This creates:
 
@@ -16,7 +17,7 @@ In many African healthcare facilities, diagnostic services suffer from fragmente
 * **Revenue Leakage:** Manual reconciliation causes missing or untracked payments.
 * **Poor Patient Experience:** Long payment queues and financial confusion.
 
-## 🚀 Our Solution: The Orchestration Layer
+## Our Solution: The Orchestration Layer
 
 DiagnosticsPay introduces a **single payment orchestration layer**. Instead of patients paying each diagnostic unit separately, our platform aggregates all ordered diagnostics into **one unified bill**.
 
@@ -27,7 +28,7 @@ DiagnosticsPay introduces a **single payment orchestration layer**. Instead of p
 
 ---
 
-## 🛠 Tech Stack & Architecture
+## Tech Stack & Architecture
 
 We utilized a "Two Kingdoms" monorepo structure to optimize parallel development during the 72-hour sprint.
 
@@ -48,7 +49,7 @@ We utilized a "Two Kingdoms" monorepo structure to optimize parallel development
 
 ---
 
-## ⚙️ Local Setup Guide
+## Local Setup Guide
 
 To run this project locally for judging or development:
 
@@ -103,7 +104,7 @@ Open `http://localhost:3000` to view the application.
 
 ---
 
-## 🔌 Core API Endpoints
+## Core API Endpoints
 
 Our Express backend exposes 4 optimized endpoints to power the orchestration layer:
 
@@ -137,13 +138,9 @@ Fetches real-time revenue and transaction data based on successfully split funds
 
 ---
 
-## 👥 The Team
+## The Team
 
-* **Hassan Ismail** — Product and Frontend Lead
-* **Ayomide** — Backend + Data Engineer
-* **Simbiat** — Frontend + UX/UI Design
-* **Tunji** — Product Manager / Operations
-
-```
-
-***
+* [**Hassan Ismail**](https://github.com/hassanismailtech) — Product and Frontend Lead
+* [**Ayomide Ayodele-Soyebo**](https://github.com/AyomideA-S) — Backend + Data Engineer
+* [**Simbiat Jinadu**](https://github.com/Simby1) — Frontend + UX/UI Design
+* [**Olamitunji Akinwale**](https://github.com/tunnji) — Product Manager / Operations
