@@ -42,7 +42,15 @@ export function TransactionTableRow({
           <StatusBadge status={transaction.status} />
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {transaction.time ? formatDateTime(transaction.time) : 'N/A'}
+          {transaction.time
+            ? new Date(transaction.time).toLocaleTimeString('en-NG', {
+                hour: '2-digit', minute: '2-digit',
+              })
+            : transaction.created_at
+            ? new Date(transaction.created_at).toLocaleTimeString('en-NG', {
+                hour: '2-digit', minute: '2-digit',
+              })
+            : '—'}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm">
           {hasSplits && (
@@ -65,7 +73,7 @@ export function TransactionTableRow({
       {isExpanded && hasSplits && (
         <tr>
           <td colSpan={7} className="px-6 py-0">
-            <SplitEngineExpander splits={transaction.splits!} />
+            <SplitEngineExpander splits={transaction.splits!} totalAmount={transaction.amount} />
           </td>
         </tr>
       )}

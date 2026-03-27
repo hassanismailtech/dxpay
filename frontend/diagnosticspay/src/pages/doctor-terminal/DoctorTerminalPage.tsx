@@ -14,7 +14,7 @@ import { useIsMobile } from '@/shared/hooks/useMediaQuery';
 
 export function DoctorTerminalPage() {
   const isMobile = useIsMobile();
-  const { paymentLink, reset, availableTests } = useOrderStore();
+  const { paymentLink, reset, availableTests, addTest } = useOrderStore();
   
   const [activeCategory, setActiveCategory] = useState<TestCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,20 +33,7 @@ export function DoctorTerminalPage() {
     return true;
   });
 
-  const handleAddTest = () => {
-    // If payment link exists, reset the order first
-    if (paymentLink) {
-      reset();
-    }
-    // Add the test (handled by the store)
-  };
 
-  // Redirect to payment if payment link exists
-  useEffect(() => {
-    if (paymentLink) {
-      window.location.href = paymentLink;
-    }
-  }, [paymentLink]);
 
   return (
     <div className="p-6">
@@ -61,7 +48,7 @@ export function DoctorTerminalPage() {
           {/* Quick Add Grid */}
           <QuickAddGrid 
             tests={availableTests} 
-            onAddTest={handleAddTest}
+            onAddTest={(test) => addTest(test)}
           />
 
           {/* Search and Filters */}

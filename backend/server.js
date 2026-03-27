@@ -12,7 +12,13 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://dxpay.vercel.app',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean),
+}));
 app.use(express.json());
 
 // Mount the router to a specific base path

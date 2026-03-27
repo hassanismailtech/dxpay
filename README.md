@@ -143,4 +143,4 @@ Fetches real-time revenue and transaction data based on successfully split funds
 * [**Hassan Ismail**](https://github.com/hassanismailtech) — Product and Frontend Lead
 * [**Ayomide Ayodele-Soyebo**](https://github.com/AyomideA-S) — Backend + Data Engineer
 * [**Simbiat Jinadu**](https://github.com/Simby1) — Frontend + UX/UI Design
-* [**Olamitunji Akinwale**](https://github.com/tunnji) — Product Manager / Operations
+* [**Olamitunji Akinwale**](https://github.com/tunnnji) — Product Manager / Operations

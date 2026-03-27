@@ -10,17 +10,22 @@ import { PayButton } from '@/features/payment/ui/PayButton';
 import { usePaymentStore } from '@/features/payment/model/usePaymentStore';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 import { EmptyState } from '@/shared/ui/EmptyState';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ShieldCheck } from 'lucide-react';
 
 export default function InvoicePage() {
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
-  
-  const { invoice, paymentStatus, error } = usePaymentStore();
+  const { invoice, paymentStatus, error, fetchInvoice } = usePaymentStore();
+
+  useEffect(() => {
+    if (invoiceId) {
+      fetchInvoice(invoiceId);
+    }
+  }, [invoiceId, fetchInvoice]);
 
   if (paymentStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -28,10 +33,10 @@ export default function InvoicePage() {
 
   if (error || !invoice) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[#F8FAFC]">
         <EmptyState
           title="Invoice not found"
-          description={error || "The invoice you're looking for doesn't exist or has been removed."}
+          description={error || "This invoice doesn't exist or has expired."}
           icon={<AlertCircle className="h-12 w-12 text-red-400" />}
         />
       </div>
@@ -39,31 +44,22 @@ export default function InvoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[--surface-subtle] py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] py-8 px-4">
+      <div className="max-w-md mx-auto">
         <InvoiceHeader invoiceNumber={invoice.invoice_number} />
-        
-        <InvoicePatientInfo
-          patientName={invoice.patient_name}
-          providerName={invoice.provider_name}
-          date={invoice.date}
-        />
-        
-        <InvoiceLineItems tests={invoice.tests} />
-        
-        <InvoiceTotals
-          subtotal={invoice.subtotal}
-          total={invoice.total}
-        />
-        
-        <PayButton
-          invoiceId={invoiceId}
-          amount={invoice.total}
-          className="mb-4"
-        />
-        
-        <div className="text-center text-sm text-gray-500">
-          <p>Secured by Interswitch</p>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+          <InvoicePatientInfo
+            patientName={invoice.patient_name}
+            providerName={invoice.provider_name}
+            date={invoice.date}
+          />
+          <InvoiceLineItems tests={invoice.tests} />
+          <InvoiceTotals subtotal={invoice.subtotal} total={invoice.total} />
+        </div>
+        <PayButton invoiceId={invoiceId} amount={invoice.total} className="mb-4" />
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+          <ShieldCheck className="h-4 w-4" />
+          <span>Secured by Interswitch</span>
         </div>
       </div>
     </div>

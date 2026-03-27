@@ -56,4 +56,45 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const query = `
+            SELECT 
+                t.id,
+                t.amount,
+                t.transaction_reference,
+                o.patient_name,
+                o.created_at,
+                json_agg(json_build_object('name', ts.name, 'price', ts.price)) AS tests
+            FROM Transactions t
+            JOIN Orders o ON t.order_id = o.id
+            JOIN OrderItems oi ON oi.order_id = o.id
+            JOIN Tests ts ON ts.id = oi.test_id
+            WHERE t.id = $1
+            GROUP BY t.id, t.amount, t.transaction_reference, o.patient_name, o.created_at
+        `;
+        const result = await pool.query(query, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Invoice not found.' });
+        }
+        const row = result.rows[0];
+        res.status(200).json({
+            id: row.id,
+            patient_name: row.patient_name,
+            provider_name: 'Lagos General Hospital',
+            invoice_number: row.transaction_reference,
+            date: new Date(row.created_at).toLocaleDateString('en-NG', { 
+                day: '2-digit', month: 'short', year: 'numeric' 
+            }),
+            tests: row.tests,
+            subtotal: parseFloat(row.amount),
+            total: parseFloat(row.amount)
+        });
+    } catch (error) {
+        console.error('Error fetching invoice:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+});
+
 module.exports = router;

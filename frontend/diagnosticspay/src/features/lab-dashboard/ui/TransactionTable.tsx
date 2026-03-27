@@ -20,28 +20,79 @@ export function TransactionTable({
   const mockTransactions: Transaction[] = [
     {
       id: 'TXN-001',
-      patient_name: 'Fatima Abdullahi',
-      tests: ['Full Blood Count', 'Malaria Test'],
-      amount: 11000,
+      patient_name: 'Adebayo Ogundimu',
+      tests: ['Full Blood Count', 'Malaria Parasite'],
+      amount: 12000,
       status: 'Paid',
-      created_at: '2024-03-27T10:30:00Z'
+      time: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      splits: [
+        { provider: 'Lab Services', amount: 9600, type: 'lab' },
+        { provider: 'Imaging', amount: 0, type: 'imaging' },
+        { provider: 'Admin Fee (20%)', amount: 2400, type: 'admin' },
+      ],
     },
     {
       id: 'TXN-002',
-      patient_name: 'Chukwuemeka Okafor',
-      tests: ['Liver Function Test'],
-      amount: 12000,
+      patient_name: 'Fatima Ibrahim',
+      tests: ['Chest X-Ray', 'Liver Function Test'],
+      amount: 27000,
       status: 'Paid',
-      created_at: '2024-03-27T09:45:00Z'
+      time: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+      splits: [
+        { provider: 'Lab Services', amount: 12000, type: 'lab' },
+        { provider: 'Imaging (X-Ray)', amount: 9600, type: 'imaging' },
+        { provider: 'Admin Fee (20%)', amount: 5400, type: 'admin' },
+      ],
     },
     {
       id: 'TXN-003',
-      patient_name: 'Aisha Bello',
-      tests: ['Fasting Blood Sugar', 'Lipid Profile'],
-      amount: 11500,
+      patient_name: 'Chukwuemeka Eze',
+      tests: ['Abdominal Ultrasound', 'Renal Function Test'],
+      amount: 37000,
       status: 'Awaiting',
-      created_at: '2024-03-27T08:15:00Z'
-    }
+      time: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+      splits: [
+        { provider: 'Lab Services', amount: 10000, type: 'lab' },
+        { provider: 'Imaging (Ultrasound)', amount: 19600, type: 'imaging' },
+        { provider: 'Admin Fee (20%)', amount: 7400, type: 'admin' },
+      ],
+    },
+    {
+      id: 'TXN-004',
+      patient_name: 'Ngozi Okonkwo',
+      tests: ['Lipid Profile', 'Fasting Blood Sugar', 'HbA1c'],
+      amount: 20000,
+      status: 'Paid',
+      time: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      splits: [
+        { provider: 'Lab Services', amount: 16000, type: 'lab' },
+        { provider: 'Admin Fee (20%)', amount: 4000, type: 'admin' },
+      ],
+    },
+    {
+      id: 'TXN-005',
+      patient_name: 'Oluwaseun Adeleke',
+      tests: ['MRI Scan'],
+      amount: 120000,
+      status: 'Processing',
+      time: new Date(Date.now() - 1000 * 60 * 150).toISOString(),
+      splits: [
+        { provider: 'Imaging (MRI)', amount: 96000, type: 'imaging' },
+        { provider: 'Admin Fee (20%)', amount: 24000, type: 'admin' },
+      ],
+    },
+    {
+      id: 'TXN-006',
+      patient_name: 'Amina Bello',
+      tests: ['Blood Group & Rhesus', 'Genotype'],
+      amount: 8000,
+      status: 'Paid',
+      time: new Date(Date.now() - 1000 * 60 * 200).toISOString(),
+      splits: [
+        { provider: 'Lab Services', amount: 6400, type: 'lab' },
+        { provider: 'Admin Fee (20%)', amount: 1600, type: 'admin' },
+      ],
+    },
   ];
   
   const displayTransactions = transactions && transactions.length > 0 ? transactions : mockTransactions;

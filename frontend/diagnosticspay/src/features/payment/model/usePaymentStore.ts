@@ -23,6 +23,7 @@ interface PaymentState {
   error: string | null;
   // Actions
   setInvoice: (invoice: Invoice) => void;
+  fetchInvoice: (invoiceId: string) => Promise<void>;
   verifyPayment: (txRef: string) => Promise<void>;
   reset: () => void;
 }
@@ -34,6 +35,19 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
   error: null,
 
   setInvoice: (invoice: Invoice) => set({ invoice }),
+
+  fetchInvoice: async (invoiceId: string) => {
+    set({ paymentStatus: 'loading', error: null });
+    try {
+      const invoice = await paymentApi.fetchInvoice(invoiceId);
+      set({ invoice, paymentStatus: 'idle' });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Invoice not found',
+        paymentStatus: 'failed'
+      });
+    }
+  },
 
   verifyPayment: async (txRef: string) => {
     set({ paymentStatus: 'loading', error: null });
