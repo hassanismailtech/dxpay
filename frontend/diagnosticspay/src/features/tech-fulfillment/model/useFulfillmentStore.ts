@@ -2,6 +2,43 @@ import { create } from 'zustand';
 import { Order } from '@/entities/order/model/types';
 import { fulfillmentApi } from '../api/fulfillmentApi';
 
+// Mock data for Tech Queue as Ayo didn't build a queue API
+const MOCK_ORDERS: Order[] = [
+  {
+    id: 'ORD-2024-001',
+    patient_name: 'Adebayo Ogundimu',
+    tests: [
+      { id: 1, name: 'Full Blood Count', price: 7000, category: 'hematology', provider_id: 1 }
+    ],
+    total_amount: 7000,
+    status: 'ready_to_process',
+    created_at: '2024-03-27T09:30:00Z',
+    time_elapsed: '14 mins ago'
+  },
+  {
+    id: 'ORD-2024-004',
+    patient_name: 'Ngozi Okonkwo',
+    tests: [
+      { id: 5, name: 'Malaria Parasite Test', price: 4000, category: 'chemistry', provider_id: 1 }
+    ],
+    total_amount: 4000,
+    status: 'sample_collected',
+    created_at: '2024-03-27T08:45:00Z',
+    time_elapsed: '31 mins ago'
+  },
+  {
+    id: 'ORD-2024-007',
+    patient_name: 'Emeka Nwosu',
+    tests: [
+      { id: 6, name: 'Platelet Count', price: 5000, category: 'hematology', provider_id: 1 }
+    ],
+    total_amount: 5000,
+    status: 'paid',
+    created_at: '2024-03-27T09:55:00Z',
+    time_elapsed: '5 mins ago'
+  }
+];
+
 interface FulfillmentState {
   orders: Order[];
   activeDepartment: 'hematology' | 'mri' | 'imaging';
@@ -10,7 +47,6 @@ interface FulfillmentState {
   isLoading: boolean;
   error: string | null;
   // Actions
-  fetchOrders: () => Promise<void>;
   setDepartment: (dept: 'hematology' | 'mri' | 'imaging') => void;
   setFilter: (f: 'queue' | 'history') => void;
   setSearch: (q: string) => void;
@@ -20,25 +56,12 @@ interface FulfillmentState {
 }
 
 export const useFulfillmentStore = create<FulfillmentState>((set, get) => ({
-  orders: [],
+  orders: MOCK_ORDERS,
   activeDepartment: 'hematology',
   activeFilter: 'queue',
   searchQuery: '',
   isLoading: false,
   error: null,
-
-  fetchOrders: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const orders = await fulfillmentApi.fetchPaidOrders();
-      set({ orders, isLoading: false });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch orders',
-        isLoading: false
-      });
-    }
-  },
 
   setDepartment: (dept: 'hematology' | 'mri' | 'imaging') => 
     set({ activeDepartment: dept }),
@@ -50,50 +73,32 @@ export const useFulfillmentStore = create<FulfillmentState>((set, get) => ({
     set({ searchQuery: q }),
 
   startTest: async (orderId: string) => {
-    try {
-      await fulfillmentApi.updateOrderStatus(orderId, 'processing');
-      const { orders } = get();
-      set({
-        orders: orders.map(order =>
-          order.id === orderId ? { ...order, status: 'processing' } : order
-        )
-      });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to start test'
-      });
-    }
+    // Ayo did not build PUT /api/orders/:id/status endpoint - only update local state
+    const { orders } = get();
+    set({
+      orders: orders.map(order =>
+        order.id === orderId ? { ...order, status: 'processing' } : order
+      )
+    });
   },
 
   markSample: async (orderId: string) => {
-    try {
-      await fulfillmentApi.updateOrderStatus(orderId, 'sample_collected');
-      const { orders } = get();
-      set({
-        orders: orders.map(order =>
-          order.id === orderId ? { ...order, status: 'sample_collected' } : order
-        )
-      });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to mark sample'
-      });
-    }
+    // Ayo did not build PUT /api/orders/:id/status endpoint - only update local state
+    const { orders } = get();
+    set({
+      orders: orders.map(order =>
+        order.id === orderId ? { ...order, status: 'sample_collected' } : order
+      )
+    });
   },
 
   completeOrder: async (orderId: string) => {
-    try {
-      await fulfillmentApi.updateOrderStatus(orderId, 'completed');
-      const { orders } = get();
-      set({
-        orders: orders.map(order =>
-          order.id === orderId ? { ...order, status: 'completed' } : order
-        )
-      });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to complete order'
-      });
-    }
+    // Ayo did not build PUT /api/orders/:id/status endpoint - only update local state
+    const { orders } = get();
+    set({
+      orders: orders.map(order =>
+        order.id === orderId ? { ...order, status: 'completed' } : order
+      )
+    });
   }
 }));

@@ -31,7 +31,6 @@ export default function TechFulfillmentPage() {
     searchQuery,
     isLoading,
     error,
-    fetchOrders,
     setDepartment,
     setFilter,
     setSearch,
@@ -41,10 +40,6 @@ export default function TechFulfillmentPage() {
   } = useFulfillmentStore();
 
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
-
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -60,7 +55,7 @@ export default function TechFulfillmentPage() {
       order.patient_name.toLowerCase().includes(localSearchQuery.toLowerCase());
     
     const matchesFilter = activeFilter === 'queue' 
-      ? ['paid', 'sample_collected', 'processing'].includes(order.status)
+      ? ['paid', 'ready_to_process', 'sample_collected', 'processing'].includes(order.status)
       : ['completed'].includes(order.status);
 
     return matchesSearch && matchesFilter;

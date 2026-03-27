@@ -1,6 +1,20 @@
 import { create } from 'zustand';
-import { Invoice, PaymentVerification } from '../api/paymentApi';
+import { PaymentVerification } from '../api/paymentApi';
 import { paymentApi } from '../api/paymentApi';
+
+export interface Invoice {
+  id: string;
+  patient_name: string;
+  provider_name: string;
+  invoice_number: string;
+  date: string;
+  tests: Array<{
+    name: string;
+    price: number;
+  }>;
+  subtotal: number;
+  total: number;
+}
 
 interface PaymentState {
   invoice: Invoice | null;
@@ -8,7 +22,7 @@ interface PaymentState {
   verification: PaymentVerification | null;
   error: string | null;
   // Actions
-  fetchInvoice: (invoiceId: string) => Promise<void>;
+  setInvoice: (invoice: Invoice) => void;
   verifyPayment: (txRef: string) => Promise<void>;
   reset: () => void;
 }
@@ -19,18 +33,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
   verification: null,
   error: null,
 
-  fetchInvoice: async (invoiceId: string) => {
-    set({ paymentStatus: 'loading', error: null });
-    try {
-      const invoice = await paymentApi.fetchInvoice(invoiceId);
-      set({ invoice, paymentStatus: 'idle' });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch invoice',
-        paymentStatus: 'failed'
-      });
-    }
-  },
+  setInvoice: (invoice: Invoice) => set({ invoice }),
 
   verifyPayment: async (txRef: string) => {
     set({ paymentStatus: 'loading', error: null });

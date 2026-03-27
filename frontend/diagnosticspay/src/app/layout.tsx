@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.variable} font-sans antialiased`}>
         <div className="flex min-h-screen bg-background">
           <DesktopSidebar />
-          <main className="flex-1 lg:ml-[260px] min-h-screen pb-20 lg:pb-0">
+          <main className="flex-1 lg:ml-65 min-h-screen pb-20 lg:pb-0">
             {children}
           </main>
         </div>

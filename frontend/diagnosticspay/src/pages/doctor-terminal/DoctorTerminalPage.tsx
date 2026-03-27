@@ -17,53 +17,24 @@ import { useIsMobile } from '@/shared/hooks/useMediaQuery';
 
 export function DoctorTerminalPage() {
   const isMobile = useIsMobile();
-  const { paymentLink, reset } = useOrderStore();
+  const { paymentLink, reset, availableTests } = useOrderStore();
   
-  const [tests, setTests] = useState<DiagnosticTest[]>([]);
-  const [filteredTests, setFilteredTests] = useState<DiagnosticTest[]>([]);
   const [activeCategory, setActiveCategory] = useState<TestCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchTests();
-  }, []);
-
-  useEffect(() => {
-    filterTests();
-  }, [tests, activeCategory, searchQuery]);
-
-  const fetchTests = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const fetchedTests = await orderApi.fetchTests();
-      setTests(fetchedTests);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch tests');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const filterTests = () => {
-    let filtered = tests;
-
+  const filteredTests = availableTests.filter(test => {
     // Filter by category
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(test => test.category === activeCategory);
+    if (activeCategory !== 'all' && test.category !== activeCategory) {
+      return false;
     }
 
     // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(test =>
-        test.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    if (searchQuery && !test.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
     }
 
-    setFilteredTests(filtered);
-  };
+    return true;
+  });
 
   const handleAddTest = (test: DiagnosticTest) => {
     // If payment link exists, reset the order first
@@ -80,28 +51,6 @@ export function DoctorTerminalPage() {
     }
   }, [paymentLink]);
 
-  if (isLoading && tests.length === 0) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center py-12">
-          <LoadingSpinner size="lg" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <EmptyState
-          title="Error loading tests"
-          description={error}
-          icon={<AlertCircle className="h-12 w-12 text-red-400" />}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
       <PageHeader 
@@ -114,7 +63,7 @@ export function DoctorTerminalPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Quick Add Grid */}
           <QuickAddGrid 
-            tests={tests} 
+            tests={availableTests} 
             onAddTest={handleAddTest}
           />
 

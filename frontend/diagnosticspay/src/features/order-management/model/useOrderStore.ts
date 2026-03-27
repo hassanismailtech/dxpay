@@ -2,6 +2,14 @@ import { create } from 'zustand';
 import { DiagnosticTest } from '@/entities/test/model/types';
 import { orderApi } from '../api/orderApi';
 
+// Hardcoded tests as Ayo didn't build a test catalog API
+const HARDCODED_TESTS: DiagnosticTest[] = [
+  { id: 1, name: 'Full Blood Count', price: 7000, category: 'hematology', provider_id: 1 },
+  { id: 2, name: 'Liver Function Test', price: 12000, category: 'chemistry', provider_id: 1 },
+  { id: 3, name: 'Fasting Blood Sugar', price: 3500, category: 'chemistry', provider_id: 1 },
+  { id: 4, name: 'Lipid Profile', price: 8000, category: 'chemistry', provider_id: 1 }
+];
+
 interface OrderState {
   patientName: string;
   selectedTests: Array<DiagnosticTest & { quantity: number }>;
@@ -9,6 +17,7 @@ interface OrderState {
   paymentLink: string | null;
   isGenerating: boolean;
   error: string | null;
+  availableTests: DiagnosticTest[];
   // Actions
   setPatientName: (name: string) => void;
   addTest: (test: DiagnosticTest) => void;
@@ -25,6 +34,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   paymentLink: null,
   isGenerating: false,
   error: null,
+  availableTests: HARDCODED_TESTS,
 
   setPatientName: (name: string) => set({ patientName: name }),
 
