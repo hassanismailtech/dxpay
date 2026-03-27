@@ -5,18 +5,20 @@ export interface PaymentSplit {
 }
 
 export interface Transaction {
-  id: string;           // "TXN-001"
+  id: string;
+  transaction_id?: string;
   patient_name: string;
-  tests: string[];
+  tests?: string[];
   amount: number;
+  revenue_share?: number;
   status: 'Paid' | 'Awaiting' | 'Processing';
-  time: string;
+  time?: string;
+  created_at?: string;
   splits?: PaymentSplit[];
 }
 
 export interface DashboardData {
-  totalRevenue: number;
-  settledSplits: number;
-  activeOrders: number;
+  total_revenue: number;
+  number_of_tests: number;
   transactions: Transaction[];
 }

@@ -6,10 +6,5 @@ export interface DiagnosticTest {
   price: number;
   category: TestCategory;
   provider_id: number;
-}
-
-export interface Provider {
-  id: number;
-  name: string;
-  type: 'lab' | 'imaging' | 'admin';
+  isQuickAdd?: boolean;
 }

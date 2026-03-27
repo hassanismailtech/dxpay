@@ -1,51 +1,53 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { DesktopSidebar } from "@/widgets/app-shell/DesktopSidebar";
-import { MobileBottomNav } from "@/widgets/app-shell/MobileBottomNav";
-import { Toaster } from "react-hot-toast";
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
+import { DesktopSidebar } from '@/widgets/app-shell/DesktopSidebar';
+import { MobileBottomNav } from '@/widgets/app-shell/MobileBottomNav';
+import './globals.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: "DiagnosticsPay - Medical Payments",
-  description: "Streamlined diagnostic test payments for healthcare providers",
+  title: 'DiagnosticsPay | Medical Lab Payment Platform',
+  description: 'Seamless payment processing for medical diagnostics and laboratory services',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  themeColor: '#002C5F',
+  width: 'device-width',
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en">
       <head>
         {/* Interswitch Web Pay SDK */}
-        <script 
-          src="https://newwebpay.interswitchng.com/plugin/browse-pay.js" 
-          async 
+        <script
+          src="https://newwebpay.interswitchng.com/plugin/browse-pay.js"
+          async
         />
       </head>
-      <body className="min-h-full bg-[--surface-subtle]">
-        <div className="flex min-h-screen">
-          <DesktopSidebar />          {/* hidden on mobile */}
-          <main className="flex-1 md:ml-[260px]">
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <div className="flex min-h-screen bg-background">
+          <DesktopSidebar />
+          <main className="flex-1 lg:ml-[260px] min-h-screen pb-20 lg:pb-0">
             {children}
           </main>
         </div>
-        <MobileBottomNav />           {/* hidden on desktop */}
-        <Toaster position="top-right" />
+        <MobileBottomNav />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: '10px',
+              background: 'hsl(var(--card))',
+              color: 'hsl(var(--foreground))',
+              border: '1px solid hsl(var(--border))',
+              fontSize: '14px',
+            },
+          }}
+        />
       </body>
     </html>
   );
