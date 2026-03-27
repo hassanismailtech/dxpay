@@ -1,0 +1,585 @@
+DiagnosticsPay Frontend Sprint Plan
+Enyata × Interswitch Buildathon 2026
+Stack: Next.js 15 · TypeScript · TailwindCSS v4 · shadcn/ui (Nova) · Zustand · Axios · date-fns
+
+0. What's Already Done
+ Local scaffold at frontend/diagnosticspay/ has:
+•	Next.js 15 App Router + TypeScript + Tailwind v4
+•	shadcn/ui button, card, input, badge, table, tabs, dialog
+•	Zustand, Axios, date-fns, lucide-react, react-hot-toast installed
+•	FSD top-level folders: app/, entities/, features/, shared/ui/, widgets/
+This plan covers what's missing i.e. basically every file inside them.
+
+1. Additional Installs (Run First)
+# Additional shadcn components needed by the screens
+npx shadcn@latest add separator avatar scroll-area tooltip skeleton
+
+# QR Code for the "Generate Instant Payment & QR" stretch feature
+npm install qrcode.react
+npm install --save-dev @types/qrcode.react
+
+# Polling helper for payment verification
+npm install swr
+
+2. Environment Variables
+Create frontend/diagnosticspay/.env.local:
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:3000
+For Vercel deployment, add these same keys via Vercel Dashboard → Settings → Environment Variables.
+
+3. Design Tokens (globals.css update)
+The design uses a clear token system derived from the screens. Extend src/app/globals.css:
+/* Brand Palette — extracted from Figma screens */
+:root {
+  --brand-primary:   #CC0000;   /* DiagnosticsPay red */
+  --brand-dark:      #1A2235;   /* Sidebar / header dark navy */
+  --brand-green:     #22C55E;   /* Paid / verified green */
+  --brand-amber:     #F59E0B;   /* Awaiting / processing yellow */
+  --brand-muted:     #6B7280;   /* Secondary text */
+  --surface:         #FFFFFF;
+  --surface-subtle:  #F8FAFC;
+  --border:          #E5E7EB;
+}
+
+4. Full FSD Directory Structure
+src/
+│
+├── app/                                ← Next.js App Router (routes only)
+│   ├── layout.tsx                      ← Root layout + Toaster
+│   ├── page.tsx                        ← /  → Doctor Terminal
+│   ├── dashboard/
+│   │   └── page.tsx                    ← /dashboard → Lab Dashboard
+│   ├── tech/
+│   │   └── page.tsx                    ← /tech → Tech Fulfillment
+│   └── pay/
+│       └── [invoiceId]/
+│           ├── page.tsx                ← /pay/[id] → Patient Invoice
+│           └── success/
+│               └── page.tsx           ← /pay/[id]/success → Payment Verified
+│
+├── entities/                           ← Pure domain types + thin display units
+│   ├── test/
+│   │   ├── model/
+│   │   │   └── types.ts                ← DiagnosticTest, TestCategory, Provider
+│   │   └── ui/
+│   │       └── TestListItem.tsx        ← Single row in the catalog list
+│   ├── order/
+│   │   ├── model/
+│   │   │   └── types.ts                ← Order, OrderItem, OrderStatus
+│   │   └── ui/
+│   │       └── OrderStatusBadge.tsx    ← "Ready to Process" / "Sample Collected"
+│   ├── transaction/
+│   │   └── model/
+│   │       └── types.ts                ← Transaction, PaymentSplit, DashboardData
+│   └── patient/
+│       └── model/
+│           └── types.ts                ← Patient (name, invoice reference)
+│
+├── features/                           ← Self-contained user-facing slices
+│   ├── order-management/               ← Doctor creates orders
+│   │   ├── api/
+│   │   │   └── orderApi.ts
+│   │   ├── model/
+│   │   │   └── useOrderStore.ts        ← Zustand
+│   │   └── ui/
+│   │       ├── QuickAddGrid.tsx        ← 8-tile shortcut grid
+│   │       ├── TestCatalogTabs.tsx     ← Hematology / Radiology / Chemistry tabs
+│   │       ├── TestSearchBar.tsx       ← Search input
+│   │       ├── TestCatalogList.tsx     ← Scrollable list of TestListItems
+│   │       └── OrderSummary.tsx        ← Right-panel live summary + QR button
+│   ├── payment/                        ← Patient-facing payment flow
+│   │   ├── api/
+│   │   │   └── paymentApi.ts
+│   │   ├── model/
+│   │   │   └── usePaymentStore.ts
+│   │   └── ui/
+│   │       ├── InvoiceHeader.tsx       ← Logo + Invoice # header
+│   │       ├── InvoicePatientInfo.tsx  ← Patient / Date / Provider block
+│   │       ├── InvoiceLineItems.tsx    ← Test rows with prices
+│   │       ├── InvoiceTotals.tsx       ← Subtotal / Total Due
+│   │       ├── PayButton.tsx           ← "Pay ₦XX,XXX" CTA (triggers Interswitch)
+│   │       ├── PaymentSuccessBanner.tsx← Green header on success page
+│   │       ├── PaymentReceiptDetails.tsx← Reference / Amount / Method / DateTime
+│   │       ├── DownloadReceiptButton.tsx
+│   │       └── ResultsReadyNotice.tsx  ← "Results ready in 24-48hrs" notice
+│   ├── lab-dashboard/
+│   │   ├── api/
+│   │   │   └── dashboardApi.ts
+│   │   ├── model/
+│   │   │   └── useDashboardStore.ts
+│   │   └── ui/
+│   │       ├── RevenueStatCards.tsx    ← Today's Revenue / Settled Splits / Active Orders
+│   │       ├── TransactionTable.tsx    ← Main ledger table
+│   │       ├── TransactionTableRow.tsx ← One row with expand toggle
+│   │       └── SplitEngineExpander.tsx ← Expandable split bar (Lab / Imaging / Admin)
+│   └── tech-fulfillment/
+│       ├── api/
+│       │   └── fulfillmentApi.ts
+│       ├── model/
+│       │   └── useFulfillmentStore.ts
+│       └── ui/
+│           ├── DepartmentFilterTabs.tsx← Hematology / MRI Suite / Imaging + Queue/History
+│           ├── OrderCardMobile.tsx     ← Card-style for mobile (Start Test / Mark Sample)
+│           ├── OrdersTableDesktop.tsx  ← Table-style for desktop
+│           └── ActiveDepartmentBanner.tsx
+│
+├── widgets/                            ← Assembled layout blocks used by pages
+│   ├── app-shell/
+│   │   ├── DesktopSidebar.tsx          ← Dark nav sidebar (logo, links, user avatar)
+│   │   └── MobileBottomNav.tsx         ← Doctor / Lab / Tech / Patient tabs
+│   └── page-header/
+│       └── PageHeader.tsx              ← Title + subtitle, used by all 3 main pages
+│
+└── shared/
+    ├── api/
+    │   └── axiosClient.ts              ← Configured Axios instance
+    ├── config/
+    │   └── env.ts                      ← Typed env variable exports
+    ├── lib/
+    │   └── utils.ts                    ← cn(), formatNaira(), formatDateTime()
+    ├── hooks/
+    │   └── useMediaQuery.ts            ← For mobile/desktop layout switching
+    └── ui/                             ← Re-exported or extended shadcn components
+        ├── CurrencyAmount.tsx          ← Renders ₦ amounts with consistent styling
+        ├── StatusBadge.tsx             ← Color-coded status pills
+        ├── LoadingSpinner.tsx
+        └── EmptyState.tsx
+
+5. All Pages — Routes, Purpose, Components Used
+Page 1: Doctor Terminal — /
+Purpose: Doctor selects diagnostic tests for a patient and generates an invoice + payment link.
+Components mounted:
+•	widgets/app-shell/DesktopSidebar (desktop)
+•	widgets/app-shell/MobileBottomNav (mobile)
+•	widgets/page-header/PageHeader ("Doctor's Order Terminal")
+•	features/order-management/ui/QuickAddGrid
+•	features/order-management/ui/TestSearchBar
+•	features/order-management/ui/TestCatalogTabs → renders TestCatalogList → renders entities/test/ui/TestListItem
+•	features/order-management/ui/OrderSummary (right panel / bottom sheet on mobile)
+API calls:
+1.	GET /api/tests?category=hematology → populate catalog
+2.	POST /api/orders → on "Generate Instant Payment & QR"
+3.	POST /api/invoices → get payment_link
+State (Zustand useOrderStore):
+{ selectedTests: DiagnosticTest[], patientName: string, 
+  orderId: string | null, invoiceUrl: string | null }
+
+Page 2: Lab Dashboard — /dashboard
+Purpose: Financial ledger. Today's revenue, settled splits, active orders. Transaction table with split engine expansion.
+Components mounted:
+•	widgets/app-shell/DesktopSidebar
+•	widgets/app-shell/MobileBottomNav
+•	widgets/page-header/PageHeader ("Lab Dashboard")
+•	features/lab-dashboard/ui/RevenueStatCards
+•	features/lab-dashboard/ui/TransactionTable → renders TransactionTableRow → expands to SplitEngineExpander
+API calls:
+1.	GET /api/dashboard?provider_id=1 → revenue stats + transaction list
+State (Zustand useDashboardStore):
+{ totalRevenue: number, settledSplits: number, activeOrders: number,
+  transactions: Transaction[], expandedRow: string | null }
+
+Page 3: Tech Fulfillment — /tech
+Purpose: Lab technician sees queue of paid, verified orders. Can Start Test, Mark Sample, or Complete Order.
+Components mounted:
+•	widgets/app-shell/DesktopSidebar
+•	widgets/app-shell/MobileBottomNav
+•	widgets/page-header/PageHeader ("Technician Fulfillment")
+•	features/tech-fulfillment/ui/ActiveDepartmentBanner
+•	features/tech-fulfillment/ui/DepartmentFilterTabs
+•	features/tech-fulfillment/ui/OrderCardMobile (mobile) OR OrdersTableDesktop (desktop) — switched via useMediaQuery
+API calls:
+1.	GET /api/orders?status=paid → active queue (NOTE: Ayo needs to confirm this endpoint or use dashboard data)
+2.	PATCH /api/orders/:id/status → update order status (stretch — may mock for demo)
+State (Zustand useFulfillmentStore):
+{ activeOrders: Order[], activeDepartment: string, 
+  activeFilter: 'queue' | 'history', searchQuery: string }
+
+Page 4: Patient Invoice — /pay/[invoiceId]
+Purpose: Patient-facing payment page. Shows invoice summary and triggers Interswitch Web Checkout.
+Components mounted:
+•	features/payment/ui/InvoiceHeader
+•	features/payment/ui/InvoicePatientInfo
+•	features/payment/ui/InvoiceLineItems
+•	features/payment/ui/InvoiceTotals
+•	features/payment/ui/PayButton → opens Interswitch Web Checkout widget
+API calls:
+1.	GET /api/invoices/:invoiceId → fetch invoice details (patient name, test list, total)
+2.	After Interswitch callback: GET /api/payment/verify?transaction_reference=TXN-... → confirm payment
+3.	On success → redirect to /pay/[invoiceId]/success
+State (Zustand usePaymentStore):
+{ invoice: Invoice | null, paymentStatus: 'idle' | 'loading' | 'success' | 'failed' }
+Interswitch Integration Note: The Interswitch Web Checkout is loaded via their JS SDK script tag in layout.tsx. The PayButton calls window.webpayCheckout({ ... }) with the txnref, amount, merchantCode from the env vars, then handles the callback.
+<!-- Add to app/layout.tsx <head> -->
+<script src="https://newwebpay.interswitchng.com/plugin/browse-pay.js"></script>
+
+Page 5: Payment Success — /pay/[invoiceId]/success
+Purpose: Confirmation screen after Interswitch verifies payment.
+Components mounted:
+•	features/payment/ui/PaymentSuccessBanner
+•	features/payment/ui/PaymentReceiptDetails
+•	features/payment/ui/ResultsReadyNotice
+•	features/payment/ui/DownloadReceiptButton
+Data source: Query params from Interswitch callback (txnref, amount, resp) + one verification API call.
+
+6. Shared Components — Detailed Spec
+shared/api/axiosClient.ts
+import axios from 'axios';
+
+export const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
+});
+
+// Global error interceptor
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const message = err.response?.data?.error || 'Something went wrong';
+    return Promise.reject(new Error(message));
+  }
+);
+shared/lib/utils.ts
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { format } from 'date-fns';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function formatNaira(amount: number): string {
+  return `₦${amount.toLocaleString('en-NG')}`;
+}
+
+export function formatDateTime(dateStr: string): string {
+  return format(new Date(dateStr), 'dd MMM yyyy, HH:mm');
+}
+shared/ui/StatusBadge.tsx
+Handles all status states across the app:
+const variants = {
+  'Ready to Process': 'bg-green-100 text-green-700',
+  'Sample Collected': 'bg-gray-100 text-gray-600',
+  'Paid':             'bg-green-100 text-green-700',
+  'Awaiting':         'bg-amber-100 text-amber-700',
+  'Processing':       'bg-blue-100 text-blue-700',
+};
+shared/hooks/useMediaQuery.ts
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    mq.addEventListener('change', (e) => setIsMobile(e.matches));
+  }, []);
+  return isMobile;
+}
+
+7. API Service Files — Full Endpoint Map
+features/order-management/api/orderApi.ts
+Function	Method	Endpoint	Payload
+fetchTests(category?)	GET	/api/tests	—
+createOrder(patientName, testIds)	POST	/api/orders	{patient_name, test_ids}
+generateInvoice(orderId)	POST	/api/invoices	{order_id}
+
+features/payment/api/paymentApi.ts
+Function	Method	Endpoint	Payload
+fetchInvoice(invoiceId)	GET	/api/invoices/:id	—
+verifyPayment(txRef)	GET	/api/payment/verify	?transaction_reference=
+
+features/lab-dashboard/api/dashboardApi.ts
+Function	Method	Endpoint	Payload
+fetchDashboard(providerId)	GET	/api/dashboard	?provider_id=
+
+features/tech-fulfillment/api/fulfillmentApi.ts
+Function	Method	Endpoint	Notes
+fetchPaidOrders()	GET	/api/orders?status=paid	Confirm with Ayo
+updateOrderStatus(id, status)	PATCH	/api/orders/:id/status	May mock for demo
+
+8. Zustand Stores — Full Shape
+features/order-management/model/useOrderStore.ts
+interface OrderState {
+  patientName: string;
+  selectedTests: DiagnosticTest[];
+  orderId: string | null;
+  paymentLink: string | null;
+  isGenerating: boolean;
+  // Actions
+  setPatientName: (name: string) => void;
+  addTest: (test: DiagnosticTest) => void;
+  removeTest: (testId: number) => void;
+  updateQuantity: (testId: number, qty: number) => void;
+  generateInvoice: () => Promise<void>;
+  reset: () => void;
+}
+features/lab-dashboard/model/useDashboardStore.ts
+interface DashboardState {
+  stats: { totalRevenue: number; settledSplits: number; activeOrders: number } | null;
+  transactions: Transaction[];
+  expandedTxnId: string | null;
+  isLoading: boolean;
+  // Actions
+  fetchData: () => Promise<void>;
+  toggleExpand: (id: string) => void;
+}
+features/tech-fulfillment/model/useFulfillmentStore.ts
+interface FulfillmentState {
+  orders: Order[];
+  activeDepartment: 'hematology' | 'mri' | 'imaging';
+  activeFilter: 'queue' | 'history';
+  searchQuery: string;
+  // Actions
+  fetchOrders: () => Promise<void>;
+  setDepartment: (dept: string) => void;
+  setFilter: (f: 'queue' | 'history') => void;
+  setSearch: (q: string) => void;
+  startTest: (orderId: string) => void;
+  markSample: (orderId: string) => void;
+  completeOrder: (orderId: string) => void;
+}
+
+9. Entities — TypeScript Types
+entities/test/model/types.ts
+export type TestCategory = 'hematology' | 'radiology' | 'chemistry';
+export interface DiagnosticTest {
+  id: number;
+  name: string;
+  price: number;
+  category: TestCategory;
+  provider_id: number;
+}
+entities/order/model/types.ts
+export type OrderStatus = 'pending' | 'paid' | 'processing' | 'completed';
+export interface Order {
+  id: string;           // e.g. "ORD-2024-001"
+  patient_name: string;
+  tests: DiagnosticTest[];
+  total_amount: number;
+  status: OrderStatus;
+  created_at: string;
+  time_elapsed: string; // e.g. "14 mins ago"
+}
+entities/transaction/model/types.ts
+export interface PaymentSplit {
+  provider: string;
+  amount: number;
+  type: 'lab' | 'imaging' | 'admin';
+}
+export interface Transaction {
+  id: string;           // "TXN-001"
+  patient_name: string;
+  tests: string[];
+  amount: number;
+  status: 'Paid' | 'Awaiting' | 'Processing';
+  time: string;
+  splits?: PaymentSplit[];
+}
+
+10. Widgets
+widgets/app-shell/DesktopSidebar.tsx
+•	DiagnosticsPay logo (red pulse icon + wordmark)
+•	"Medical Payments" subtitle
+•	Nav links: Doctor Terminal (/), Lab Dashboard (/dashboard), Tech Fulfillment (/tech), Patient Invoice (/pay/...)
+•	Active state: red background pill
+•	Bottom: user avatar + name + hospital (e.g. "Dr Akinbile / LASUTH") + v1.0.0 + "Powered by Interswitch"
+•	Only visible on md: and above (hidden on mobile)
+widgets/app-shell/MobileBottomNav.tsx
+•	4 tabs: Doctor (stethoscope icon) / Lab (grid icon) / Tech (flask icon, active = red) / Patient (receipt icon)
+•	Fixed to bottom, white background, border-top
+•	Only visible on mobile (hidden on md:)
+widgets/page-header/PageHeader.tsx
+interface Props { title: string; subtitle: string; }
+
+11. Root Layout
+src/app/layout.tsx
+import { Toaster } from 'react-hot-toast';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <head>
+        {/* Interswitch Web Pay SDK */}
+        <script src="https://newwebpay.interswitchng.com/plugin/browse-pay.js" async />
+      </head>
+      <body>
+        <div className="flex min-h-screen bg-[--surface-subtle]">
+          <DesktopSidebar />          {/* hidden on mobile */}
+          <main className="flex-1 md:ml-[260px]">
+            {children}
+          </main>
+        </div>
+        <MobileBottomNav />           {/* hidden on desktop */}
+        <Toaster position="top-right" />
+      </body>
+    </html>
+  );
+}
+Note: The /pay/[invoiceId] route should use a separate layout (no sidebar/nav) since it's patient-facing. Create src/app/pay/layout.tsx that renders children directly.
+
+12. Work Split: 
+H's Scope — Infrastructure + Data Views
+Priority 1 — Foundation (start immediately)
+Task	Files
+shared/api/axiosClient.ts	Base Axios config
+shared/config/env.ts	Typed env vars
+shared/lib/utils.ts	cn, formatNaira, formatDateTime
+shared/hooks/useMediaQuery.ts	Mobile hook
+All entities/*/model/types.ts	4 type files
+
+Priority 2 — Lab Dashboard
+Task	Files
+features/lab-dashboard/api/dashboardApi.ts	fetchDashboard()
+features/lab-dashboard/model/useDashboardStore.ts	Zustand
+features/lab-dashboard/ui/RevenueStatCards.tsx	3 stat cards
+features/lab-dashboard/ui/TransactionTable.tsx	Table shell
+features/lab-dashboard/ui/TransactionTableRow.tsx	Row + expand toggle
+features/lab-dashboard/ui/SplitEngineExpander.tsx	Split bar + legend
+src/app/dashboard/page.tsx	Page assembly
+
+Priority 3 — Tech Fulfillment
+Task	Files
+features/tech-fulfillment/api/fulfillmentApi.ts	fetchPaidOrders()
+features/tech-fulfillment/model/useFulfillmentStore.ts	Zustand
+features/tech-fulfillment/ui/ActiveDepartmentBanner.tsx	Dark navy banner
+features/tech-fulfillment/ui/DepartmentFilterTabs.tsx	Tabs + Queue/History
+features/tech-fulfillment/ui/OrdersTableDesktop.tsx	Desktop table
+src/app/tech/page.tsx	Page assembly
+Priority 4 — Order API + Fulfillment Integration
+Task	Files
+features/order-management/api/orderApi.ts	All 3 API calls
+features/order-management/model/useOrderStore.ts	Zustand
+features/payment/api/paymentApi.ts	verifyPayment()
+Priority 5 — Deployment
+Task	Notes
+Vercel project setup	vercel link from frontend/diagnosticspay/
+Set env vars on Vercel	NEXT_PUBLIC_API_BASE_URL → backend URL
+Backend CORS update	Add Vercel URL to backend cors() config
+vercel --prod	Deploy
+
+S's Scope — Design System + Patient Flow + Doctor Terminal UI
+Priority 1 — Design Tokens + Shared UI (do this first)
+Task	Files
+src/app/globals.css update	CSS variables from design
+shared/ui/StatusBadge.tsx	All status color variants
+shared/ui/CurrencyAmount.tsx	₦ display component
+shared/ui/LoadingSpinner.tsx	Spinner
+shared/ui/EmptyState.tsx	Empty state component
+
+Priority 2 — App Shell Widgets
+Task	Files
+widgets/app-shell/DesktopSidebar.tsx	Full sidebar (H provides type defs)
+widgets/app-shell/MobileBottomNav.tsx	Bottom nav
+widgets/page-header/PageHeader.tsx	Title/subtitle
+src/app/layout.tsx	Root layout
+src/app/pay/layout.tsx	Patient-only layout (no nav)
+
+Priority 3 — Doctor Terminal UI
+Task	Files
+entities/test/ui/TestListItem.tsx	Catalog row item
+features/order-management/ui/QuickAddGrid.tsx	8-tile grid
+features/order-management/ui/TestSearchBar.tsx	Search input
+features/order-management/ui/TestCatalogTabs.tsx	Tabs component
+features/order-management/ui/TestCatalogList.tsx	Scrollable list
+features/order-management/ui/OrderSummary.tsx	Right panel + QR button
+src/app/page.tsx	Page assembly (wire to H's store)
+
+Priority 4 — Patient Invoice + Payment Success
+Task	Files
+features/payment/ui/InvoiceHeader.tsx	Logo + invoice #
+features/payment/ui/InvoicePatientInfo.tsx	Patient block
+features/payment/ui/InvoiceLineItems.tsx	Test rows
+features/payment/ui/InvoiceTotals.tsx	Subtotal / Total
+features/payment/ui/PayButton.tsx	Interswitch trigger
+features/payment/model/usePaymentStore.ts	Zustand
+src/app/pay/[invoiceId]/page.tsx	Invoice page
+features/payment/ui/PaymentSuccessBanner.tsx	Green banner
+features/payment/ui/PaymentReceiptDetails.tsx	Receipt rows
+features/payment/ui/ResultsReadyNotice.tsx	24-48hr notice
+features/payment/ui/DownloadReceiptButton.tsx	Download button
+src/app/pay/[invoiceId]/success/page.tsx	Success page
+
+Priority 5 — Mobile Tech Card
+Task	Files
+features/tech-fulfillment/ui/OrderCardMobile.tsx	Mobile order card
+entities/order/ui/OrderStatusBadge.tsx	Status badge for orders
+
+13. Step-by-Step Sprint Execution Order
+Hour 1–2: Foundation (Both in parallel)
+H:
+# Create all files in shared/
+touch src/shared/api/axiosClient.ts
+touch src/shared/config/env.ts
+touch src/shared/lib/utils.ts
+touch src/shared/hooks/useMediaQuery.ts
+# Create all entity type files
+mkdir -p src/entities/{test,order,transaction,patient}/model
+touch src/entities/test/model/types.ts
+touch src/entities/order/model/types.ts
+touch src/entities/transaction/model/types.ts
+touch src/entities/patient/model/types.ts
+S:
+# Update design tokens and create shared UI
+# Edit src/app/globals.css
+touch src/shared/ui/StatusBadge.tsx
+touch src/shared/ui/CurrencyAmount.tsx
+touch src/shared/ui/LoadingSpinner.tsx
+Hour 3–4: App Shell + API Layer
+H: Build all API service files and Zustand stores.
+S: Build DesktopSidebar, MobileBottomNav, PageHeader, root layout.tsx.
+Hour 5–8: Feature Pages (Full Parallel)
+H: Lab Dashboard (all components + page) → Tech Fulfillment (all components + page).
+S: Doctor Terminal (all components + page) → Patient Invoice (all components + page) → Payment Success page.
+Hour 9–10: Integration + Wiring
+Both come together to:
+1.	Wire S's Doctor Terminal UI to H's useOrderStore
+2.	Wire H's Tech page to also use OrderCardMobile from S
+3.	Test the full flow end-to-end: Doctor creates order → Invoice generated → Patient pays → Success screen → Dashboard updates
+Hour 11–12: Polish + Deploy
+H:
+# In frontend/diagnosticspay/
+npm install -g vercel
+vercel login
+vercel link    # link to Vercel project
+vercel env add NEXT_PUBLIC_API_BASE_URL production
+vercel --prod
+Update backend server.js to allow the Vercel domain:
+app.use(cors({ origin: ['http://localhost:3000', 'https://your-app.vercel.app'] }));
+S: Final UI polish — spacing, hover states, loading skeletons on data-fetching components.
+
+14. Interswitch Web Checkout Integration
+The PayButton component must trigger the Interswitch Web Checkout modal:
+// features/payment/ui/PayButton.tsx
+declare global {
+  interface Window { webpayCheckout: (config: object) => void; }
+}
+
+const handlePay = () => {
+  window.webpayCheckout({
+    merchant_code: process.env.NEXT_PUBLIC_INTERSWITCH_MERCHANT_CODE,
+    pay_item_id: '101',           // from Interswitch dashboard
+    txn_ref: invoice.id,          // the TXN-... reference
+    amount: invoice.amount * 100, // in kobo
+    currency: 566,                // NGN
+    site_redirect_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/pay/${invoice.id}/success`,
+    mode: 'TEST',                 // switch to 'LIVE' for production
+    onComplete: (response) => {
+      if (response.resp === '00') {
+        router.push(`/pay/${invoice.id}/success?txnref=${invoice.id}`);
+      }
+    },
+    onClose: () => toast('Payment cancelled'),
+  });
+};
+
+15. Key Demo Flow to Validate
+Before submission, run this exact flow to confirm everything works:
+1.	Open / → Enter patient name "Adebayo Ogundimu"
+2.	Add Full Blood Count (₦7,000) + Liver Function Test (₦12,000) + Fasting Blood Sugar (₦3,500) + Lipid Profile (₦8,000)
+3.	Click "Generate Instant Payment & QR" → order created → invoice generated
+4.	Payment link opens /pay/TXN-... → shows ₦30,500 invoice
+5.	Click "Pay ₦30,500" → Interswitch sandbox checkout
+6.	Complete payment → redirected to /pay/TXN-.../success
+7.	Success screen shows: Reference DP-LKA8B3-X9F2, Amount ₦30,500, Interswitch, 22 Mar 2026 14:37
+8.	Open /dashboard → new transaction appears, revenue updated
+9.	Open /tech → order appears in Hematology queue as "Ready to Process"
+

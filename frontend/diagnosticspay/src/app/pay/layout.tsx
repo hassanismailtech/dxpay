@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { DesktopSidebar } from "@/widgets/app-shell/DesktopSidebar";
-import { MobileBottomNav } from "@/widgets/app-shell/MobileBottomNav";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -16,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DiagnosticsPay - Medical Payments",
-  description: "Streamlined diagnostic test payments for healthcare providers",
+  title: "DiagnosticsPay - Payment",
+  description: "Secure payment for diagnostic tests",
 };
 
-export default function RootLayout({
+export default function PatientLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -38,13 +35,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full bg-[--surface-subtle]">
-        <div className="flex min-h-screen">
-          <DesktopSidebar />          {/* hidden on mobile */}
-          <main className="flex-1 md:ml-[260px]">
-            {children}
-          </main>
+        <div className="min-h-screen">
+          {children}
         </div>
-        <MobileBottomNav />           {/* hidden on desktop */}
         <Toaster position="top-right" />
       </body>
     </html>
