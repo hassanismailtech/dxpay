@@ -8,11 +8,8 @@ import { TestCatalogTabs } from '@/features/order-management/ui/TestCatalogTabs'
 import { TestCatalogList } from '@/features/order-management/ui/TestCatalogList';
 import { OrderSummary } from '@/features/order-management/ui/OrderSummary';
 import { useOrderStore } from '@/features/order-management/model/useOrderStore';
-import { orderApi } from '@/features/order-management/api/orderApi';
-import { DiagnosticTest, TestCategory } from '@/entities/test/model/types';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { TestCategory } from '@/entities/test/model/types';
 import { EmptyState } from '@/shared/ui/EmptyState';
-import { AlertCircle } from 'lucide-react';
 import { useIsMobile } from '@/shared/hooks/useMediaQuery';
 
 export function DoctorTerminalPage() {
@@ -36,7 +33,7 @@ export function DoctorTerminalPage() {
     return true;
   });
 
-  const handleAddTest = (test: DiagnosticTest) => {
+  const handleAddTest = () => {
     // If payment link exists, reset the order first
     if (paymentLink) {
       reset();
