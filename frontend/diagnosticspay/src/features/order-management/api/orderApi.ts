@@ -1,5 +1,5 @@
 import { api } from '@/shared/api/axiosClient';
-import { Order, OrderItem } from '@/entities/order/model/types';
+import { Order } from '@/entities/order/model/types';
 
 export const orderApi = {
   createOrder: async (patientName: string, testIds: number[]): Promise<Order> => {
