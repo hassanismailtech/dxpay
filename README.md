@@ -106,30 +106,59 @@ Open `http://localhost:3000` to view the application.
 
 ## Core API Endpoints
 
-Our Express backend exposes 4 optimized endpoints to power the orchestration layer:
+Our Express backend exposes 5 optimized endpoints to power the orchestration layer:
 
-### 1. Create Order (`POST /api/orders`)
+### 1. Diagnostic Test Catalog
+
+Manage and fetch the available diagnostic tests from providers.
+
+- **Fetch All Tests**
+  - **URL:** `GET /api/tests`
+  - **Success Response (200):**
+    ```json
+    [
+      {
+        "id": 1,
+        "name": "Malaria Test",
+        "price": "5000.00",
+        "provider_name": "Lagos Central Lab"
+      }
+    ]
+    ```
+- **Create New Test**
+  - **URL:** `POST /api/tests`
+  - **Payload:**
+    ```json
+    {
+      "name": "Panoramic Dental X-Ray",
+      "price": 15000,
+      "provider_id": 1
+    }
+    ```
+  - **Success Response (201):** Returns the created test object.
+
+### 2. Create Order (`POST /api/orders`)
 
 Creates an aggregated bill from multiple diagnostic tests.
 
 * **Payload:** `{"patient_name": "Chukwudi Okafor", "test_ids": [1, 2]}`
 * **Response:** `{"order_id": "ORD-123456-789", "total_amount": 19000}`
 
-### 2. Generate Invoice & Payment Link (`POST /api/invoices`)
+### 3. Generate Invoice & Payment Link (`POST /api/invoices`)
 
 Generates the unique transaction reference needed for Web Checkout.
 
 * **Payload:** `{"order_id": "ORD-123456-789"}`
 * **Response:** `{"invoice_id": "TXN-1711270000000", "payment_link": "https://dxpay.vercel.app/pay/TXN-1711270000000", "amount": 19000}`
 
-### 3. Verify Payment & Execute Split (`GET /api/payment/verify`)
+### 4. Verify Payment & Execute Split (`GET /api/payment/verify`)
 
 Verifies the transaction with Interswitch and triggers the **Payment Split Engine** to allocate funds to providers.
 
 * **Query:** `?transaction_reference=TXN-1711270000000`
 * **Response:** `{"payment_status": "successful"}` *(Includes a graceful demo fallback if sandbox is unreachable).*
 
-### 4. Lab Dashboard Analytics (`GET /api/dashboard`)
+### 5. Lab Dashboard Analytics (`GET /api/dashboard`)
 
 Fetches real-time revenue and transaction data based on successfully split funds.
 
