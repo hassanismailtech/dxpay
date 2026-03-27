@@ -1,15 +1,28 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { format } from 'date-fns';
 
+// UI styling tool
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Naira formatting tool
 export function formatNaira(amount: number): string {
-  return `₦${amount.toLocaleString('en-NG')}`;
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 0,
+  }).format(amount);
 }
 
-export function formatDateTime(dateStr: string): string {
-  return format(new Date(dateStr), 'dd MMM yyyy, HH:mm');
+// Date formatting tool
+export function formatDateTime(dateInput: string | Date): string {
+  const date = new Date(dateInput);
+  return new Intl.DateTimeFormat('en-NG', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
 }

@@ -22,7 +22,7 @@ export function DesktopSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] bg-[--color-sidebar,var(--sidebar)] text-sidebar-foreground min-h-screen fixed left-0 top-0 z-30 border-r border-sidebar-border">
+    <aside className="hidden lg:flex flex-col w-65 bg-[--color-sidebar,var(--sidebar)] text-sidebar-foreground min-h-screen fixed left-0 top-0 z-30 border-r border-sidebar-border">
       {/* Logo Block */}
       <div className="flex items-center gap-3 px-6 py-6 border-b border-sidebar-border">
         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary shadow-sm shadow-primary/30">
@@ -53,7 +53,7 @@ export function DesktopSidebar() {
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
               )}
             >
-              <Icon className={cn('w-[18px] h-[18px] flex-shrink-0', isActive ? 'text-primary-foreground' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground')} />
+              <Icon className={cn('w-4.5 h-4.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground')} />
               <div className="min-w-0">
                 <div className="truncate">{label}</div>
                 {!isActive && (
@@ -75,7 +75,7 @@ export function DesktopSidebar() {
             href="/pay/demo"
             className="group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all duration-150"
           >
-            <Receipt className="w-[18px] h-[18px] flex-shrink-0 text-sidebar-foreground/30 group-hover:text-sidebar-foreground/70" />
+            <Receipt className="w-4.5 h-4.5 shrink-0 text-sidebar-foreground/30 group-hover:text-sidebar-foreground/70" />
             <div className="min-w-0">
               <div className="truncate">Patient Invoice</div>
               <div className="text-[10px] text-sidebar-foreground/30 truncate leading-none mt-0.5">

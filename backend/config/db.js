@@ -1,15 +1,25 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-    user: process.env.PGUSER,
-    host: process.env.PGHOST,
-    database: process.env.PGDATABASE,
-    password: process.env.PGPASSWORD,
-    port: process.env.PGPORT,
-});
+// The Hybrid Setup: 
+// If DATABASE_URL exists (Render/Neon), use it with SSL.
+// Otherwise, fall back to the individual local variables.
+const poolConfig = process.env.DATABASE_URL 
+  ? { 
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false } // Crucial for Neon cloud connections
+    }
+  : {
+      user: process.env.PGUSER,
+      host: process.env.PGHOST,
+      database: process.env.PGDATABASE,
+      password: process.env.PGPASSWORD,
+      port: process.env.PGPORT,
+    };
 
-// Test the connection immediately
+const pool = new Pool(poolConfig);
+
+// Test the connection immediately (Keeping the original logs)
 pool.on('connect', () => {
     console.log('Connected to the PostgreSQL database successfully.');
 });

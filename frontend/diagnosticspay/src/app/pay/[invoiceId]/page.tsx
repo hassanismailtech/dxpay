@@ -16,13 +16,7 @@ export default function InvoicePage() {
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
   
-  const { invoice, paymentStatus, fetchInvoice, error } = usePaymentStore();
-
-  useEffect(() => {
-    if (invoiceId) {
-      fetchInvoice(invoiceId);
-    }
-  }, [invoiceId, fetchInvoice]);
+  const { invoice, paymentStatus, error } = usePaymentStore();
 
   if (paymentStatus === 'loading') {
     return (
