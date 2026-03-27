@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge"
 
 // UI styling tool
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 // Naira formatting tool
