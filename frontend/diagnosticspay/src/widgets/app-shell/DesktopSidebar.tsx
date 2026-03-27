@@ -41,7 +41,7 @@ export function DesktopSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-5 space-y-1">
         {navItems.map(({ href, label, icon: Icon, sublabel }) => {
-          const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+          const isActive = pathname === href || (href !== '/' && (pathname || '').startsWith(href));
           return (
             <Link
               key={href}

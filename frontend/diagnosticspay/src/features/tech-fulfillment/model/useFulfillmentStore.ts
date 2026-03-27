@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { Order } from '@/entities/order/model/types';
 import { fulfillmentApi } from '../api/fulfillmentApi';
 
-// Mock data for Tech Queue as Ayo didn't build a queue API
 const MOCK_ORDERS: Order[] = [
   {
     id: 'ORD-2024-001',
@@ -73,7 +72,6 @@ export const useFulfillmentStore = create<FulfillmentState>((set, get) => ({
     set({ searchQuery: q }),
 
   startTest: async (orderId: string) => {
-    // Ayo did not build PUT /api/orders/:id/status endpoint - only update local state
     const { orders } = get();
     set({
       orders: orders.map(order =>
@@ -83,7 +81,6 @@ export const useFulfillmentStore = create<FulfillmentState>((set, get) => ({
   },
 
   markSample: async (orderId: string) => {
-    // Ayo did not build PUT /api/orders/:id/status endpoint - only update local state
     const { orders } = get();
     set({
       orders: orders.map(order =>
@@ -93,7 +90,6 @@ export const useFulfillmentStore = create<FulfillmentState>((set, get) => ({
   },
 
   completeOrder: async (orderId: string) => {
-    // Ayo did not build PUT /api/orders/:id/status endpoint - only update local state
     const { orders } = get();
     set({
       orders: orders.map(order =>

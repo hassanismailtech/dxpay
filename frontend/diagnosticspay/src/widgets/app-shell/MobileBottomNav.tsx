@@ -16,13 +16,13 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   // Don't show on patient invoice pages (they get a clean layout)
-  if (pathname.startsWith('/pay/')) return null;
+  if (pathname?.startsWith('/pay/')) return null;
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-pb">
       <ul className="flex justify-around py-1">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+          const isActive = pathname === href || (href !== '/' && pathname?.startsWith(href));
           return (
             <li key={href} className="flex-1">
               <Link
