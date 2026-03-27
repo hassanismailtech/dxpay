@@ -32,7 +32,7 @@ export function TransactionTableRow({
         </td>
         <td className="px-6 py-4 text-sm text-gray-900">
           <div className="max-w-xs truncate">
-            {transaction.tests.join(', ')}
+            {transaction.tests?.join(', ') || 'Diagnostic Tests'}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -42,7 +42,7 @@ export function TransactionTableRow({
           <StatusBadge status={transaction.status} />
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {formatDateTime(transaction.time)}
+          {transaction.time ? formatDateTime(transaction.time) : 'N/A'}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm">
           {hasSplits && (
