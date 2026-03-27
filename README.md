@@ -1,39 +1,69 @@
+# 🩺 DiagnosticsPay
 
-# 🩺 DiagnosticsPay 
+**A unified diagnostic billing and payment orchestration layer for African hospitals.**
+Built for the **Enyata x Interswitch Buildathon 2026**.
 
-**Enyata x Interswitch Buildathon 2026**
-
-DiagnosticsPay is a diagnostic billing infrastructure for African hospitals. It provides a single payment orchestration layer allowing doctors to order multiple diagnostic tests, aggregates the bill for the patient to pay once digitally, and automatically splits the funds to the respective providers (labs, imaging centers, and hospitals) via Interswitch.
-
----
-
-## 📁 Project Structure
-
-To avoid merge conflicts during the 72-hour sprint, we are using a "Two Kingdoms" monorepo structure:
-* `/frontend`: Next.js / React application
-* `/backend`: Node.js / Express / PostgreSQL application
+🌐 **Live Demo:** [https://dxpay.vercel.app](https://dxpay.vercel.app/)
+⚙️ **Live API Base URL:** [https://dxpay.onrender.com](https://dxpay.onrender.com/)
 
 ---
 
-## ⚙️ Backend Local Setup Guide
+## 💡 The Problem
 
-Follow these steps to get the local Express server and PostgreSQL database running on your machine.
+In many African healthcare facilities, diagnostic services suffer from fragmented payment systems. Patients often move between departments (Labs, Radiology, Pharmacy), paying separately for tests and receiving multiple paper receipts. This creates:
 
-### 1. Prerequisites
+* **Workflow Delays:** Tests cannot start until individual payment confirmations are received.
+* **Revenue Leakage:** Manual reconciliation causes missing or untracked payments.
+* **Poor Patient Experience:** Long payment queues and financial confusion.
 
-* **Node.js** (v18+ recommended)
-* **PostgreSQL** (v16+ running locally on port 5432)
+## 🚀 Our Solution: The Orchestration Layer
 
-### 2. Environment Variables
+DiagnosticsPay introduces a **single payment orchestration layer**. Instead of patients paying each diagnostic unit separately, our platform aggregates all ordered diagnostics into **one unified bill**.
 
-Navigate to the `/backend` directory and create a `.env` file. Do not commit this file.
+1. **Order:** Doctor orders multiple tests via the Terminal.
+2. **Aggregate:** System generates a single, unified invoice.
+3. **Pay:** Patient pays once digitally via Interswitch.
+4. **Split (Core Innovation):** The backend **Payment Split Engine** automatically distributes the funds to the respective providers (e.g., Hematology Lab, Imaging Center, Hospital Admin).
+
+---
+
+## 🛠 Tech Stack & Architecture
+
+We utilized a "Two Kingdoms" monorepo structure to optimize parallel development during the 72-hour sprint.
+
+### **Frontend (`/frontend/diagnosticspay`)**
+
+* **Framework:** Next.js 16.2 (App Router)
+* **Language:** TypeScript
+* **Styling:** Tailwind CSS + Shadcn UI
+* **State Management:** Zustand
+* **Deployment:** Vercel
+
+### **Backend (`/backend`)**
+
+* **Framework:** Node.js + Express.js
+* **Database:** PostgreSQL (Hosted on Neon.tech)
+* **Payment Gateway:** Interswitch APIs
+* **Deployment:** Render
+
+---
+
+## ⚙️ Local Setup Guide
+
+To run this project locally for judging or development:
+
+### 1. Backend Setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file in the `/backend` directory. *(Note: Our `db.js` uses a hybrid config. If `DATABASE_URL` is provided, it uses SSL for cloud DBs. Otherwise, it falls back to local variables).*
+
 ```env
 PORT=5000
-PGUSER=postgres
-PGPASSWORD=your_local_postgres_password
-PGHOST=localhost
-PGPORT=5432
-PGDATABASE=dxpay
+DATABASE_URL=your_neon_or_local_postgres_connection_string
 
 # Interswitch API Credentials (Sandbox)
 INTERSWITCH_CLIENT_ID=your_test_client_id
@@ -42,101 +72,78 @@ INTERSWITCH_PASSPORT_ENV=[https://qa.interswitchng.com/passport/oauth/token](htt
 INTERSWITCH_MERCHANT_CODE=MX6072
 ```
 
-### 3. Database Initialization
-
-1. Open your local PostgreSQL terminal or GUI (like SQLTools in VS Code).
-2. Create the database: `CREATE DATABASE dxpay;`
-3. Connect to `dxpay` and run the table creation scripts (Found in `backend/config/schema.sql` or requested from Ayomide).
-4. Run the seed data script to populate test providers and diagnostic tests.
-
-### 4. Install & Run
+Start the server:
 
 ```bash
-cd backend
+npm start
+```
+
+### 2. Frontend Setup
+
+Open a new terminal window:
+
+```bash
+cd frontend/diagnosticspay
 npm install
+```
+
+Create a `.env.local` file in the `/frontend/diagnosticspay` directory:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+```
+
+Start the frontend:
+
+```bash
 npm run dev
 ```
-The server will start on `http://localhost:5000`.
+
+Open `http://localhost:3000` to view the application.
 
 ---
 
-## 🔌 API Endpoints Documentation
+## 🔌 Core API Endpoints
 
-### 1. Create Order
+Our Express backend exposes 4 optimized endpoints to power the orchestration layer:
+
+### 1. Create Order (`POST /api/orders`)
 
 Creates an aggregated bill from multiple diagnostic tests.
-* **URL:** `POST /api/orders`
-* **Payload:**
-  ```json
-  {
-    "patient_name": "Chukwudi Okafor",
-    "test_ids": [1, 2]
-  }
-  ```
-* **Success Response (201):**
-  ```json
-  {
-    "order_id": "ORD-123456-789",
-    "total_amount": 12000
-  }
-  ```
 
-### 2. Generate Invoice & Payment Link
+* **Payload:** `{"patient_name": "Chukwudi Okafor", "test_ids": [1, 2]}`
+* **Response:** `{"order_id": "ORD-123456-789", "total_amount": 19000}`
 
-Generates the unique transaction reference needed for the Interswitch Web Checkout.
-* **URL:** `POST /api/invoices`
-* **Payload:**
-  ```json
-  {
-    "order_id": "ORD-123456-789"
-  }
-  ```
-* **Success Response (201):**
-  ```json
-  {
-    "invoice_id": "TXN-1711270000000-1234",
-    "payment_link": "http://localhost:3000/pay/TXN-1711270000000-1234",
-    "amount": "12000.00",
-    "patient_name": "Chukwudi Okafor"
-  }
-  ```
+### 2. Generate Invoice & Payment Link (`POST /api/invoices`)
 
-### 3. Verify Payment (Interswitch Webhook/Polling)
+Generates the unique transaction reference needed for Web Checkout.
 
-Verifies the transaction with Interswitch and triggers the **Payment Split Engine** to distribute funds.
-* **URL:** `GET /api/payment/verify?transaction_reference=TXN-1711270000000-1234`
-* **Success Response (200):**
-  ```json
-  {
-    "payment_status": "successful"
-  }
-  ```
-> **Note on Demo Fallback:** If the Interswitch Sandbox times out, this endpoint is configured to safely mock a "successful" response to ensure the presentation flow does not break.
+* **Payload:** `{"order_id": "ORD-123456-789"}`
+* **Response:** `{"invoice_id": "TXN-1711270000000", "payment_link": "https://dxpay.vercel.app/pay/TXN-1711270000000", "amount": 19000}`
 
-### 4. Lab Dashboard Analytics
+### 3. Verify Payment & Execute Split (`GET /api/payment/verify`)
 
-Fetches real-time revenue and transaction data for a specific provider.
-* **URL:** `GET /api/dashboard?provider_id=1`
-* **Success Response (200):**
-  ```json
-  {
-    "total_revenue": 12000,
-    "number_of_tests": 2,
-    "transactions": [
-      {
-        "transaction_id": "TXN-1711270000000-1234",
-        "revenue_share": "12000.00",
-        "patient_name": "Chukwudi Okafor",
-        "created_at": "2026-03-24T10:00:00.000Z"
-      }
-    ]
-  }
-  ```
+Verifies the transaction with Interswitch and triggers the **Payment Split Engine** to allocate funds to providers.
+
+* **Query:** `?transaction_reference=TXN-1711270000000`
+* **Response:** `{"payment_status": "successful"}` *(Includes a graceful demo fallback if sandbox is unreachable).*
+
+### 4. Lab Dashboard Analytics (`GET /api/dashboard`)
+
+Fetches real-time revenue and transaction data based on successfully split funds.
+
+* **Query:** `?provider_id=1`
+* **Response:** Returns aggregated `total_revenue`, `number_of_tests`, and the `transactions` ledger.
 
 ---
 
-## 🔀 Git Workflow & Branching
+## 👥 The Team
 
-* Always branch off `main`.
-* Prefix branches with your domain: e.g., `backend/split-engine` or `frontend/checkout-ui`.
-* Ping the project manager for Pull Request reviews before merging into `main`.
+* **Hassan Ismail** — Product and Frontend Lead
+* **Ayomide** — Backend + Data Engineer
+* **Simbiat** — Frontend + UX/UI Design
+* **Tunji** — Product Manager / Operations
+
+```
+
+***
